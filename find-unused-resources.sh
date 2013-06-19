@@ -2,6 +2,7 @@
 
 #print usual html headers
 echo "<html>"
+echo "<h1>STEP 1</h1>"
 echo "<h2> Unused resources </h2>"
 #usual disclaimer
 echo "<i> <b>Note:</b> This scans all the xib, nib files for the images available. Please look for splash screens or other images carefully in the below list which are used in the project definition (pbxproj file).<br>In order for links to work the report file must be in the same folder as project.</i>"
@@ -10,11 +11,13 @@ unusedfiles="";
 let count=0;
 let totalsize=0;
 # collect the files needs to be introspected
-project=`find $1 -name '*.?ib' -o -name '*.[mh]'`
+project=`find $1 -name '*.?ib' -or -name '*.storyboard' -or -name '*.[mh]' -or -name '*.plist'`
 
 for i in `find $1 -name "*.png" -o -name "*.jpg"`; do 
-    file=`basename -s .jpg "$i" | xargs basename -s .png | xargs basename -s @2x`
+    file=`basename -s .jpg "$i" | xargs basename -s .png | xargs basename -s ~ipad | xargs basename -s @2x | xargs basename -s -568h | xargs basename -s -Portrait | xargs basename -s -Landscape`
+    #echo " * $i <br>"
     if ! grep -q $file $project; then
+	    #echo " ** $file <br>"
         filesize=`stat -f "%z" $i`;
         filesizekb=`echo "$filesize 1024.0" | awk '{printf "%.2f", $1 / $2}'`
         unusedfiles="$unusedfiles <br> <a href=\"$i\">$i</a> ($filesizekb kb)";
@@ -34,6 +37,8 @@ if [ $count > 0 ]; then
     echo $unusedfiles;
 fi
 echo "</pre>"
+
+echo "<h1>STEP 2</h1>"
 #---------------------------------------------------------------------------------------
 # Experimental util to find the source files which are not defined in pbxproj definition.
 #---------------------------------------------------------------------------------------
